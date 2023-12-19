@@ -2,28 +2,18 @@
 #include <string.h> 
 #include <stdlib.h> 
 
-struct SeedMap {
-    int seed;
-    int soil;
-    int fertilizer;
-    int water;
-    int light;
-    int temperature;
-    int humidity;
-    int location;
+const char *fieldNames[] = {
+    "seed",
+    "soil",
+    "fertilizer",
+    "water",
+    "light",
+    "temperature",
+    "humidity",
+    "location"
 };
 
 int findFieldIndex(const char *fieldName) {
-    const char *fieldNames[] = {
-        "seed",
-        "soil",
-        "fertilizer",
-        "water",
-        "light",
-        "temperature",
-        "humidity",
-        "location"
-    };
 
     for (int i = 0; i < sizeof(fieldNames) / sizeof(fieldNames[0]); i++) {
         if (strcmp(fieldName, fieldNames[i]) == 0) {
@@ -36,24 +26,14 @@ int findFieldIndex(const char *fieldName) {
 
 void processFile(char *buffer){
 
-    //struct SeedMap seeds[100];
-    const char *fieldNames[] = {
-        "seed",
-        "soil",
-        "fertilizer",
-        "water",
-        "light",
-        "temperature",
-        "humidity",
-        "location"
-    };
     long seeds[50][8];
     int seedsSize;
-    char *line_ptr;
-    char *token= strtok_r(buffer, "\n", &line_ptr);
 
     char srcName[50];
     char destName[50];
+
+    char *line_ptr;
+    char *token= strtok_r(buffer, "\n", &line_ptr);
 
     while(token != NULL){
 
@@ -61,7 +41,6 @@ void processFile(char *buffer){
         if( strstr(token, "seeds:") ){
             int i = 0;
             char *colon = strchr(token, ':');
-            int start = colon - token; 
             char *seed_ptr;
             char *seedTok= strtok_r(colon + 1, " ", &seed_ptr);
 
@@ -77,8 +56,9 @@ void processFile(char *buffer){
             }
 
             seedsSize = i;
-        } else if( strstr(token, "map:") ){
 
+        // Find src/dst field names
+        } else if( strstr(token, "map:") ){
 
             char *hyphen = strstr(token, "-");
 
@@ -127,6 +107,8 @@ void processFile(char *buffer){
                     // then map new destination
                     long diff = destRangeStart - srcStart;
                     seeds[i][destFieldIndex] = seeds[i][srcFieldIndex] + diff;  
+
+                // if not in range then map to itself, unless the dest field already has been updated
                 } else if(seeds[i][destFieldIndex] == -1 ){
                     seeds[i][destFieldIndex] = seeds[i][srcFieldIndex];  
                 }
@@ -139,16 +121,16 @@ void processFile(char *buffer){
     }
 
     long lowestLocation = -1;
-
+    
+    // find lowest Location value in seeds array
     for(int i=0; i < seedsSize; i++){
-        for(int j=0; j < 8; j++){
-            if( strcmp(fieldNames[j], "location") == 0 ){
 
-                if( lowestLocation == -1 || seeds[i][j] < lowestLocation){
-                    lowestLocation = seeds[i][j];
-                }
-            }
-        } 
+        int locationFieldNameIndex = findFieldIndex("location");
+
+        if( lowestLocation == -1 || seeds[i][locationFieldNameIndex] < lowestLocation){
+            lowestLocation = seeds[i][locationFieldNameIndex];
+        }
+
     }
 
     printf("Lowest Location=%ld\n", lowestLocation);
