@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <ctype.h> 
 #include <string.h> 
 #include <stdlib.h> 
 
@@ -55,11 +54,10 @@ void processFile(char *buffer){
 
     char srcName[50];
     char destName[50];
-    long lowestLocation = -1;
 
     while(token != NULL){
 
-        //printf("%s", token);
+        // gather all the seeds
         if( strstr(token, "seeds:") ){
             int i = 0;
             char *colon = strchr(token, ':');
@@ -71,9 +69,6 @@ void processFile(char *buffer){
                 char *endptr;
                 seeds[i][0]= strtol(seedTok, &endptr, 10);
 
-                //printf("[%s]\n", seedTok);
-                //printf("%i\n", atoi(seedTok));
-                
                 //initialize all fields to -1
                 for(int j=1; j<8; j++){ seeds[i][j]=-1;}
 
@@ -122,8 +117,6 @@ void processFile(char *buffer){
                 locationTok= strtok_r(NULL, " ", &location_ptr); 
             }
 
-            printf("%ld %ld %ld\n", destRangeStart, srcStart, range);
-
             int srcFieldIndex = findFieldIndex(srcName);
             int destFieldIndex = findFieldIndex(destName);
 
@@ -138,30 +131,17 @@ void processFile(char *buffer){
                     seeds[i][destFieldIndex] = seeds[i][srcFieldIndex];  
                 }
                 
-                /*
-                printf("Seed #%i\n", i+1);
-                printf("%s=%i\n", srcName, seeds[i][srcFieldIndex]);
-                printf("destRangeStart=%i\n", destRangeStart);
-                printf("srcStart=%i\n", srcStart);
-                printf("range=%i\n", range);
-                printf("%s=%i\n", destName, seeds[i][destFieldIndex]);
-                printf("--- ---\n");
-                */
-
-
             }
-            //printf("========\n");
-
 
         }
 
         token= strtok_r(NULL, "\n", &line_ptr);
     }
 
+    long lowestLocation = -1;
+
     for(int i=0; i < seedsSize; i++){
         for(int j=0; j < 8; j++){
-            printf("%s [%ld], ", fieldNames[j], seeds[i][j]);
-
             if( strcmp(fieldNames[j], "location") == 0 ){
 
                 if( lowestLocation == -1 || seeds[i][j] < lowestLocation){
@@ -169,7 +149,6 @@ void processFile(char *buffer){
                 }
             }
         } 
-        printf("\n");
     }
 
     printf("Lowest Location=%ld\n", lowestLocation);
